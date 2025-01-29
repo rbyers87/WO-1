@@ -49,7 +49,7 @@ export function useWorkoutLogger() {
       // Calculate total score based on weight * reps for each set
       const totalScore = logs.reduce((total, log) => {
         return total + log.sets.reduce((setTotal, set) => {
-          return setTotal + (set.weight * set.reps);
+          return setTotal + (set.weight * set.reps); // Weight moved = weight * reps
         }, 0);
       }, 0);
 
@@ -60,7 +60,7 @@ export function useWorkoutLogger() {
           user_id: user.id,
           workout_id: workout.id,
           notes,
-          score: totalScore,
+          score: totalScore, // Use the new totalScore calculation
         })
         .select()
         .single();
