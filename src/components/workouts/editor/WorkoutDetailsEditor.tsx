@@ -48,7 +48,7 @@ export function WorkoutDetailsEditor({ formData, onChange }: WorkoutDetailsEdito
           >
                 <option value="weight training">Weight Training</option>
                 <option value="cardio">Cardio</option>
-                <option value="hiit">HIIT</option>
+                <option value="metcon">Metcon</option>
           </select>
         </div>
 
