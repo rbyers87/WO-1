@@ -172,34 +172,19 @@ import React, { useState, useEffect } from 'react';
             });
           };
         
-          const calculateScore = (exercise: WorkoutExercise, log: ExerciseLog, workoutType: string) => {
-            // Calculate score based on exercise type
-            if (exercise.exercise.name === 'Run') {
-              // Score for Run is based on total distance
-              return log.sets.reduce((total, set) => total + (set.distance || 0), 0);
-            } else if (exercise.exercise.name === 'Assault Bike') {
-              // Score for Assault Bike is based on total calories
-              return log.sets.reduce((total, set) => total + (set.calories || 0), 0);
-            } else if (workoutType === 'weight training') {
-              // Score for weight training workouts is based on the heaviest weight used
-              let maxWeight = 0;
-              log.sets.forEach(set => {
-                if (set.weight > maxWeight) {
-                  maxWeight = set.weight;
-                }
-              });
-              return maxWeight;
-            } else {
-              // Score for other exercises is based on the heaviest weight used
-              let maxWeight = 0;
-              log.sets.forEach(set => {
-                if (set.weight > maxWeight) {
-                  maxWeight = set.weight;
-                }
-              });
-              return maxWeight;
-            }
-          };
+          calculateScore = (exercise: WorkoutExercise, log: ExerciseLog) => {
+    const category = exercise.exercise.category; // Assuming 'category' is available in exercise.exercise
+
+    if (category === 'Weight Training') {
+        return log.sets.reduce((total, set) => total + (set.weight * 1), 0); // Multiply by 1 to count each set
+    } else if (category === 'Metcon') {
+        return log.sets.reduce((total, set) => total + (set.calories * 1), 0);
+    } else if (category === 'Cardio') {
+        return log.sets.reduce((total, set) => total + (set.distance * 1), 0);
+    }
+
+    return 0; // Default to 0 if category is not recognized
+};
         
           const calculateTotal = (exercise: WorkoutExercise, log: ExerciseLog) => {
             if (exercise.exercise.name === 'Run') {
