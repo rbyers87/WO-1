@@ -1,6 +1,6 @@
 {
   "name": "Workout Tracker",
-  "short_name": "WorkoutTracker",
+  "short_name": "WO-1",
   "description": "Track your workouts and fitness progress",
   "start_url": "/",
   "display": "standalone",
