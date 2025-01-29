@@ -192,7 +192,7 @@ import React, { useState, useEffect } from "react";
               >
                 <option value="weight training">Weight Training</option>
                 <option value="cardio">Cardio</option>
-                <option value="hiit">HIIT</option>
+                <option value="metcon">Metcon</option>
               </select>
             </div>
             <div className="flex items-center">
