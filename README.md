@@ -5,3 +5,7 @@ workout app that allows creating workouts, creating profiles, total weight lifte
 
 
 manifest.json is how to change app name
+
+dark mode works for ios
+
+
