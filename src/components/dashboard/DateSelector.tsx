@@ -21,7 +21,7 @@ export function DateSelector({ selectedDate, onChange }: DateSelectorProps) {
   };
 
   return (
-    <div className="flex items-center justify-between mb-4 bg-white rounded-lg shadow-sm p-4">
+    <div className="flex items-center justify-between mb-4 rounded-lg shadow-sm p-4 dark:bg-gray-800 dark:shadow-gray-700">
       <button
         onClick={handlePrevDay}
         className="p-2 hover:dark:bg-gray-700 rounded-full"
