@@ -172,7 +172,7 @@ import React, { useState, useEffect } from 'react';
             });
           };
         
-          calculateScore = (exercise: WorkoutExercise, log: ExerciseLog) => {
+          const calculateScore = (exercise: WorkoutExercise, log: ExerciseLog) => {
     const category = exercise.exercise.category; // Assuming 'category' is available in exercise.exercise
 
     if (category === 'Weight Training') {
@@ -187,21 +187,18 @@ import React, { useState, useEffect } from 'react';
 };
         
           const calculateTotal = (exercise: WorkoutExercise, log: ExerciseLog) => {
-            if (exercise.exercise.name === 'Run') {
-              return log.sets.reduce((total, set) => {
-                return total + (set.distance || 0);
-              }, 0);
-            } else if (exercise.exercise.name === 'Assault Bike') {
-              return log.sets.reduce((total, set) => {
-                return total + (set.calories || 0);
-              }, 0);
-            } else {
-              return log.sets.reduce(
-                (total, set) => total + set.weight * set.reps,
-                0
-              );
-            }
-          };
+    const category = exercise.exercise.category; // Ensure category exists
+
+    if (category === 'Cardio') {
+        return log.sets.reduce((total, set) => total + (set.distance || 0), 0);
+    } else if (category === 'Metcon') {
+        return log.sets.reduce((total, set) => total + (set.calories || 0), 0);
+    } else if (category === 'Weight Training') {
+        return log.sets.reduce((total, set) => total + (set.weight * set.reps), 0);
+    }
+
+    return 0; // Default to 0 if category is not recognized
+};
 
     // Add a new function to handle cancellation
         const handleCancel = () => {
