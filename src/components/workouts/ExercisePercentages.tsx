@@ -27,7 +27,7 @@ import React from 'react';
             {history.percentages.map(({ percentage, weight }) => (
               <div 
                 key={percentage}
-                className="bg-white rounded p-2 text-center shadow-sm"
+                className="bg-white rounded p-2 text-center shadow-sm dark:bg-gray-700"
               >
                 <div className="text-sm font-medium text-indigo-600">
                   {percentage}%
