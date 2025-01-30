@@ -391,7 +391,7 @@ export function WorkoutLogger({ workout, onClose, previousLogs, workoutLogId: in
 
   return (
         <div className="fixed inset-0 dark:bg-gray-800 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 ai-style-change-1 dark:bg-gray-700 dark:text-gray-300 dark:shadow-gray-900">
             <h2 className="text-2xl font-bold dark:text-gray-100 mb-6">
               Log Workout: {workout.name}
             </h2>
