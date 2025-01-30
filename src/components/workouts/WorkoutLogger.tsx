@@ -1,26 +1,3 @@
-To address the issue with fetching and calculating scores based on the category, let's break down the problem and potential solutions.
-
-### Key Points to Address:
-1. **Fetching Data**: Ensure that the data is being fetched correctly from Supabase.
-2. **Calculating Scores**: Ensure that the score calculation logic is correctly implemented based on the exercise category.
-3. **Error Handling**: Ensure that errors are being handled properly to avoid silent failures.
-
-### Steps to Fix the Issue:
-
-1. **Check Data Fetching**:
-   - Ensure that the `fetchInitialData` function is correctly fetching the initial data from Supabase.
-   - Verify that the `exercise_scores` table is correctly structured and contains the necessary data.
-
-2. **Score Calculation Logic**:
-   - Ensure that the `calculateScore` function correctly calculates the score based on the exercise category.
-   - Verify that the `workout.type` is correctly passed and used in the calculation.
-
-3. **Error Handling**:
-   - Add more detailed error handling to catch and log any issues during data fetching and score calculation.
-
-### Updated Code with Fixes:
-
-```typescript
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
