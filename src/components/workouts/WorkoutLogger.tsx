@@ -223,145 +223,149 @@ export function WorkoutLogger({ workout, onClose, previousLogs, workoutLogId: in
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      alert('User is not logged in.');
-      return;
+  if (!user) {
+    alert('User is not logged in.');
+    return;
+  }
+
+  try {
+    // Calculate the total score and total for the workout
+    const score = logs.reduce((total, log, index) => {
+      const exercise = workout.workout_exercises?.[index];
+      return total + (exercise ? calculateScore(exercise, log, workout.type) : 0);
+    }, 0);
+
+    const total = logs.reduce((total, log, index) => {
+      const exercise = workout.workout_exercises?.[index];
+      return total + (exercise ? calculateTotal(exercise, log) : 0);
+    }, 0);
+
+    let workoutLog;
+
+    if (workoutLogId) {
+      // Update existing workout log
+      const { data, error: updateError } = await supabase
+        .from('workout_logs')
+        .update({
+          notes,
+          score,
+          total,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', workoutLogId)
+        .select()
+        .single(); // Ensure we get the updated row back
+
+      if (updateError) {
+        console.error('Error updating workout log:', updateError);
+        throw updateError;
+      }
+
+      workoutLog = data;
+    } else {
+      // Create new workout log
+      const { data, error: workoutError } = await supabase
+        .from('workout_logs')
+        .insert({
+          user_id: user.id,
+          workout_id: workout.id,
+          notes,
+          completed_at: new Date().toISOString(),
+          score,
+          total,
+        })
+        .select()
+        .single(); // Ensure we get the inserted row back
+
+      if (workoutError) {
+        console.error('Error creating workout log:', workoutError);
+        throw workoutError;
+      }
+
+      workoutLog = data;
+      setWorkoutLogId(workoutLog.id); // Set the workoutLogId for future updates
     }
 
-    try {
-      const score = logs.reduce((total, log, index) => {
-        const exercise = workout.workout_exercises?.[index];
-        return total + (exercise ? calculateScore(exercise, log, workout.type) : 0);
-      }, 0);
-
-      const total = logs.reduce((total, log, index) => {
-        const exercise = workout.workout_exercises?.[index];
-        return total + (exercise ? calculateTotal(exercise, log) : 0);
-      }, 0);
-
-      let workoutLog;
-
-      if (workoutLogId) {
-        // Update existing workout log
-        const { error: updateError } = await supabase
-          .from('workout_logs')
-          .update({
-            notes,
-            score,
-            total,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', workoutLogId);
-
-        if (updateError) {
-          console.error('Error updating workout log:', updateError);
-          throw updateError;
-        }
-        
-        workoutLog = { id: workoutLogId };
-
-      } else {
-        // Create new workout log
-        const { data, error: workoutError } = await supabase
-          .from('workout_logs')
-          .insert({
-            user_id: user.id,
-            workout_id: workout.id,
-            notes,
-            completed_at: new Date().toISOString(),
-            score,
-            total,
-          })
-          .select()
-          .single();
-
-        if (workoutError) {
-          console.error('Error creating workout log:', workoutError);
-          throw workoutError;
-        }
-        workoutLog = data;
-        setWorkoutLogId(workoutLog.id);
-      }
-
-      // Prepare exercise scores for upsert
-      const exerciseScoresToUpsert = logs.flatMap((log, index) => {
-        const exercise = workout.workout_exercises?.[index];
-        if (!exercise) return [];
-        return log.sets.map((set) => {
-          const existingScore = existingScores.find(
-            (es) => es.exercise_id === log.exercise_id && es.workout_log_id === workoutLog.id
-          );
-          return {
-            id: set.id || uuidv4(),
-            user_id: user.id,
-            workout_log_id: workoutLog.id,
-            exercise_id: log.exercise_id,
-            weight: set.weight,
-            reps: set.reps,
-            distance: set.distance,
-            time: set.time,
-            calories: set.calories,
-          };
-        });
+    // Prepare exercise scores for upsert
+    const exerciseScoresToUpsert = logs.flatMap((log, index) => {
+      const exercise = workout.workout_exercises?.[index];
+      if (!exercise) return [];
+      return log.sets.map((set) => {
+        const existingScore = existingScores.find(
+          (es) => es.exercise_id === log.exercise_id && es.workout_log_id === workoutLog.id
+        );
+        return {
+          id: set.id || uuidv4(),
+          user_id: user.id,
+          workout_log_id: workoutLog.id,
+          exercise_id: log.exercise_id,
+          weight: set.weight,
+          reps: set.reps,
+          distance: set.distance,
+          time: set.time,
+          calories: set.calories,
+        };
       });
-      // Upsert exercise scores
-      const { error: upsertError } = await supabase
-        .from('exercise_scores')
-        .upsert(exerciseScoresToUpsert, { onConflict: 'id' });
+    });
 
-      if (upsertError) {
-        console.error('Error upserting exercise scores:', upsertError);
-        throw upsertError;
+    // Upsert exercise scores
+    const { error: upsertError } = await supabase
+      .from('exercise_scores')
+      .upsert(exerciseScoresToUpsert, { onConflict: 'id' });
+
+    if (upsertError) {
+      console.error('Error upserting exercise scores:', upsertError);
+      throw upsertError;
+    }
+
+    // Handle deleted sets
+    if (workoutLogId) {
+      const existingScoreIds = existingScores.map(es => es.id);
+      const currentScoreIds = exerciseScoresToUpsert.map(es => es.id).filter(id => id);
+      const scoresToDelete = existingScoreIds.filter(id => !currentScoreIds.includes(id));
+
+      if (scoresToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('exercise_scores')
+          .delete()
+          .in('id', scoresToDelete);
+
+        if (deleteError) throw deleteError;
       }
+    }
 
-      // Handle deleted sets
-      if (workoutLogId) {
-        const existingScoreIds = existingScores.map(es => es.id);
-        const currentScoreIds = exerciseScoresToUpsert.map(es => es.id).filter(id => id);
-        const scoresToDelete = existingScoreIds.filter(id => !currentScoreIds.includes(id));
+    // Get completed exercises for the week in the format WeeklyExercises expects
+    if (user) {
+      const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
-        if (scoresToDelete.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('exercise_scores')
-            .delete()
-            .in('id', scoresToDelete);
-
-          if (deleteError) throw deleteError;
-        }
-      }
-
-      // Get completed exercises for the week in the format WeeklyExercises expects
-      if (user) {
-        const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-
-        const { data: completedData, error: completedError } = await supabase
-          .from('workout_logs')
-          .select(`
-            completed_at,
-            workout:workouts!inner (
-              workout_exercises!inner (
-                exercise_id
-              )
+      const { data: completedData, error: completedError } = await supabase
+        .from('workout_logs')
+        .select(`
+          completed_at,
+          workout:workouts!inner (
+            workout_exercises!inner (
+              exercise_id
             )
-          `)
-          .eq('user_id', user.id)
-          .gte('completed_at', weekStart)
-          .lte('completed_at', weekEnd);
+          )
+        `)
+        .eq('user_id', user.id)
+        .gte('completed_at', weekStart)
+        .lte('completed_at', weekEnd);
 
-        if (completedError) throw completedError;
+      if (completedError) throw completedError;
 
-        const formattedCompletedExercises = completedData?.flatMap(log =>
-          log.workout.workout_exercises.map(ex => ({
-            exercise_id: ex.exercise_id,
-            completed_at: log.completed_at,
-          }))
-        ) || [];
+      const formattedCompletedExercises = completedData?.flatMap(log =>
+        log.workout.workout_exercises.map(ex => ({
+          exercise_id: ex.exercise_id,
+          completed_at: log.completed_at,
+        }))
+      ) || [];
 
-        onClose(formattedCompletedExercises);
-      } else {
-        onClose();
-      }
+      onClose(formattedCompletedExercises);
+    } else {
+      onClose();
+    }
 
       // Update the score in workout_logs table
       if (workoutLogId) {
