@@ -161,11 +161,7 @@ import React, { useState, useEffect } from 'react';
         }
       };
     
-      const categoryOptions = [
-  { value: "weight training", label: "Weight Training" },
-  { value: "cardio", label: "Cardio" },
-  { value: "metcon", label: "Metcon" }
-];
+      const categoryOptions = ['weight training', 'cardio', 'metcon'];
     
       return (
         <div className="bg-white dark:bg-darkBackground dark:text-gray-100 dark:text-gray-200 rounded-lg shadow-md p-6 transition-all duration-300">
