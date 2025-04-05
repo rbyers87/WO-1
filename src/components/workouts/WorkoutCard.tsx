@@ -102,7 +102,7 @@ import React, { useState, useEffect } from 'react';
       };
     
       return (
-        <div className="bg-white dark:bg-darkBackground dark:text-gray-100 dark:text-gray-200 rounded-lg shadow-md p-6 transition-all duration-300">
+<div className="bg-white dark:bg-darkBackground dark:text-gray-200 rounded-lg shadow-md p-6 transition-all duration-300">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="text-xl font-semibold dark:text-gray-100 dark:text-gray-100">{workout.name}</h3>
